@@ -24,6 +24,9 @@ var phantomas = function(params) {
 	// --silent
 	this.silentMode = params.silent === true;
 
+	// --quitonload
+	this.quitOnLoad = params.quitonload === true;
+
 	// setup the stuff
 	this.emitter = new (this.require('events').EventEmitter)();
 	this.page = require('webpage').create();
@@ -217,10 +220,12 @@ phantomas.prototype = {
 		this.emit('pageOpen');
 
 		// fallback - always timeout after TIMEOUT seconds
-		setTimeout(this.proxy(function() {
-			this.log('Timeout of ' + TIMEOUT + ' ms was reached!');
-			this.report();
-		}), TIMEOUT);
+		if (!this.quitOnLoad) {
+			setTimeout(this.proxy(function() {
+				this.log('Timeout of ' + TIMEOUT + ' ms was reached!');
+				this.report();
+			}), TIMEOUT);
+		}
 	},
 
 	/**
@@ -229,6 +234,10 @@ phantomas.prototype = {
 	 * This one is called when response is received. Previously scheduled reporting is removed and the new is created.
 	 */
 	enqueueReport: function() {
+		if (this.quitOnLoad) {
+			return;
+		}
+
 		clearTimeout(this.lastRequestTimeout);
 
 		if (this.currentRequests < 1) {
@@ -272,8 +281,6 @@ phantomas.prototype = {
 	},
 
 	tearDown: function() {
-		this.page.close();
-
 		// call function provided to run() method
 		if (typeof this.onDoneCallback === 'function') {
 			this.onDoneCallback();
@@ -327,7 +334,13 @@ phantomas.prototype = {
 				break;
 		}
 
-		this.enqueueReport();
+		// don't wait for any HTTP requests happening after window.onload
+		if (this.quitOnLoad) {
+			this.report();
+		}
+		else {
+			this.enqueueReport();
+		}
 	},
 
 	// debug

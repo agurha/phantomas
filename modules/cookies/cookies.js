@@ -32,7 +32,7 @@ exports.module = function(phantomas) {
 	});
 
 	// domain cookies (accessible by the browser)
-	phantomas.on('report', function() {
+	phantomas.on('loadFinished', function() {
 		phantomas.setMetric('cookiesSent', cookiesSent);
 		phantomas.setMetric('cookiesRecv', cookiesRecv);
 

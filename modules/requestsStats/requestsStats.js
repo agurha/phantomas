@@ -3,6 +3,8 @@
  */
 exports.version = '0.1';
 
+exports.skip = true;
+
 exports.module = function(phantomas) {
 	var smallestResponse,
 		biggestResponse,

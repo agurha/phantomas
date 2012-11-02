@@ -21,29 +21,27 @@ var runs = parseInt(params.runs) || false;
 
 if (runs === false) {
 	// run phantomas in a single run mode
-	new phantomas(params).run(function() {
-		phantom.exit(0);
-	});
+	new phantomas(params).run();
 }
 else {
 	var metrics = [],
 	run = function() {
 		// force silent mode
-		//params.silent = true;
+		// params.silent = true;
+		params.quitonload = true;
 		var instance = new phantomas(params);
 
 		instance.on('results', function(results) {
-			console.log(JSON.stringify(results.metrics));
-
-			metrics.push(results.metrics);
+			var res = JSON.stringify(results.metrics);
+			console.log(res);
+			metrics.push(res);
 		});
 
 		instance.run(function() {
 			if (--runs > 0) {
-				setTimeout(function() {
-					delete instance;
-					run();
-				}, 0);
+				instance.page.close();
+				delete instance;
+				run();
 			}
 			else {
 				console.log(JSON.stringify(metrics, null, '\t'));
