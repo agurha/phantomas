@@ -212,7 +212,7 @@ phantomas.prototype = {
 		this.emit('pageBeforeOpen', this.page);
 
 		// open the page
-		this.page.open(this.url, this.onPageOpened);
+		this.page.open(this.url);
 
 		this.emit('pageOpen');
 
@@ -272,7 +272,7 @@ phantomas.prototype = {
 	},
 
 	tearDown: function() {
-		this.page.release();
+		this.page.close();
 
 		// call function provided to run() method
 		if (typeof this.onDoneCallback === 'function') {

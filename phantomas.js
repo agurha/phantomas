@@ -19,44 +19,39 @@ var args = require('system').args,
 // support --runs parameter
 var runs = parseInt(params.runs) || false;
 
-try {
-	if (runs === false) {
-		// run phantomas in a single run mode
-		new phantomas(params).run(function() {
-			phantom.exit(0);
-		});
-	}
-	else {
-		var metrics = [],
-		run = function() {
-			// force silent mode
-			params.silent = true;
-			var instance = new phantomas(params);
-
-			instance.on('results', function(results) {
-				console.log(JSON.stringify(results.metrics));
-
-				metrics.push(results.metrics);
-			});
-
-			instance.run(function() {
-				if (--runs > 0) {
-					setTimeout(run, 0);
-				}
-				else {
-					console.log(JSON.stringify(metrics, null, '\t'));
-					phantom.exit(0);
-				}
-			});
-		};
-
-		run();
-	}
+if (runs === false) {
+	// run phantomas in a single run mode
+	new phantomas(params).run(function() {
+		phantom.exit(0);
+	});
 }
-catch(ex) {
-	console.log('phantomas v' + phantomas.version + ' failed with an error:');
-	console.log(ex);
+else {
+	var metrics = [],
+	run = function() {
+		// force silent mode
+		//params.silent = true;
+		var instance = new phantomas(params);
 
-	phantom.exit(1);
+		instance.on('results', function(results) {
+			console.log(JSON.stringify(results.metrics));
+
+			metrics.push(results.metrics);
+		});
+
+		instance.run(function() {
+			if (--runs > 0) {
+				setTimeout(function() {
+					delete instance;
+					run();
+				}, 0);
+			}
+			else {
+				console.log(JSON.stringify(metrics, null, '\t'));
+				phantom.exit(0);
+			}
+		});
+	};
+
+	run();
 }
 
